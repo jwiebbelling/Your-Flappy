@@ -56,8 +56,13 @@ const canvas = document.querySelector('#gameCanvas');
 const ctx = canvas.getContext('2d');
 const startOverlay = document.querySelector('#startOverlay');
 const gameOverOverlay = document.querySelector('#gameOverOverlay');
+const pauseOverlay = document.querySelector('#pauseOverlay');
 const playButton = document.querySelector('#playButton');
+const pauseButton = document.querySelector('#pauseButton');
 const restartButton = document.querySelector('#restartButton');
+const resumeButton = document.querySelector('#resumeButton');
+const mainMenuButton = document.querySelector('#mainMenuButton');
+const pauseMenuButton = document.querySelector('#pauseMenuButton');
 const changeCharacterButton = document.querySelector('#changeCharacterButton');
 const finalScoreNode = document.querySelector('#finalScore');
 const bestScoreNode = document.querySelector('#bestScore');
@@ -79,6 +84,7 @@ const state = {
   currentPipeSpeed: CONFIG.pipeSpeed,
   selectedCharacterName: 'Default sprite',
   usingCustomCharacter: false,
+  previousActiveState: GAME_STATE.READY,
 };
 
 const assets = {
@@ -96,6 +102,17 @@ function resetRun() {
   state.pipeTimer = 0;
   state.currentPipeSpeed = CONFIG.pipeSpeed;
   state.scrollX = 0;
+  state.previousActiveState = GAME_STATE.READY;
+}
+
+function setPauseButtonVisibility(isVisible) {
+  pauseButton.classList.toggle('pause-button--hidden', !isVisible);
+  pauseButton.setAttribute('aria-hidden', String(!isVisible));
+}
+
+function syncPauseButtonLabel() {
+  pauseButton.textContent = state.current === GAME_STATE.PAUSED ? 'Resume' : 'Pause';
+  pauseButton.setAttribute('aria-label', state.current === GAME_STATE.PAUSED ? 'Resume game' : 'Pause game');
 }
 
 function syncScoreUI() {
@@ -125,10 +142,42 @@ function getActiveBirdSprite(elapsedSeconds) {
 
 function startGame() {
   resetRun();
-  state.current = GAME_STATE.PLAYING;
+  state.current = GAME_STATE.READY;
   setOverlayVisibility(startOverlay, false);
   setOverlayVisibility(gameOverOverlay, false);
+  setOverlayVisibility(pauseOverlay, false);
+  setPauseButtonVisibility(true);
+  syncPauseButtonLabel();
   playSound(assets.sounds.swoosh);
+}
+
+function returnToMainMenu() {
+  resetRun();
+  state.current = GAME_STATE.START;
+  setOverlayVisibility(startOverlay, true);
+  setOverlayVisibility(gameOverOverlay, false);
+  setOverlayVisibility(pauseOverlay, false);
+  setPauseButtonVisibility(false);
+  syncPauseButtonLabel();
+  syncScoreUI();
+}
+
+function togglePause() {
+  if (state.current === GAME_STATE.PAUSED) {
+    state.current = state.previousActiveState;
+    setOverlayVisibility(pauseOverlay, false);
+    syncPauseButtonLabel();
+    return;
+  }
+
+  if (state.current !== GAME_STATE.READY && state.current !== GAME_STATE.PLAYING) {
+    return;
+  }
+
+  state.previousActiveState = state.current;
+  state.current = GAME_STATE.PAUSED;
+  setOverlayVisibility(pauseOverlay, true);
+  syncPauseButtonLabel();
 }
 
 function endGame() {
@@ -139,11 +188,22 @@ function endGame() {
   state.current = GAME_STATE.GAME_OVER;
   updateBestScore();
   setOverlayVisibility(gameOverOverlay, true);
+  setOverlayVisibility(pauseOverlay, false);
+  setPauseButtonVisibility(false);
   playSound(assets.sounds.hit);
   window.setTimeout(() => playSound(assets.sounds.die), 100);
 }
 
 function handleFlap() {
+  if (state.current === GAME_STATE.READY) {
+    state.current = GAME_STATE.PLAYING;
+    state.previousActiveState = GAME_STATE.PLAYING;
+  }
+
+  if (state.current !== GAME_STATE.PLAYING) {
+    return;
+  }
+
   flapBird(state.bird);
   playSound(assets.sounds.wing);
 }
@@ -204,6 +264,11 @@ function loop(timestamp) {
     state.bird.rotation = Math.sin(timestamp / 300) * 0.08;
   }
 
+  if (state.current === GAME_STATE.READY) {
+    state.bird.y = CONFIG.startPosition.y + Math.sin(timestamp / 260) * 10;
+    state.bird.rotation = Math.sin(timestamp / 300) * 0.08;
+  }
+
   if (state.current === GAME_STATE.GAME_OVER) {
     state.scrollX += CONFIG.scrollSpeedBackground * dt;
   }
@@ -251,13 +316,19 @@ async function bootstrap() {
   setupInput({
     canvas,
     onFlapRequest: handleFlap,
+    onPauseToggle: togglePause,
     getGameState: () => state.current,
   });
 
   playButton.addEventListener('click', startGame);
+  pauseButton.addEventListener('click', togglePause);
   restartButton.addEventListener('click', startGame);
+  resumeButton.addEventListener('click', togglePause);
+  mainMenuButton.addEventListener('click', returnToMainMenu);
+  pauseMenuButton.addEventListener('click', returnToMainMenu);
   changeCharacterButton.addEventListener('click', openCharacterPicker);
 
+  setPauseButtonVisibility(false);
   syncScoreUI();
   requestAnimationFrame(loop);
 }

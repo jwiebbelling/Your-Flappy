@@ -1,8 +1,9 @@
 import { GAME_STATE } from './constants.js';
 
-export function setupInput({ canvas, onFlapRequest, getGameState }) {
+export function setupInput({ canvas, onFlapRequest, onPauseToggle, getGameState }) {
   const handlePointerDown = (event) => {
-    if (getGameState() !== GAME_STATE.PLAYING) {
+    const currentState = getGameState();
+    if (currentState !== GAME_STATE.PLAYING && currentState !== GAME_STATE.READY) {
       return;
     }
 
@@ -16,10 +17,18 @@ export function setupInput({ canvas, onFlapRequest, getGameState }) {
     }
 
     if (event.code !== 'Space' && event.code !== 'ArrowUp') {
+      if ((event.code === 'KeyP' || event.code === 'Escape') && typeof onPauseToggle === 'function') {
+        const currentState = getGameState();
+        if (currentState === GAME_STATE.READY || currentState === GAME_STATE.PLAYING || currentState === GAME_STATE.PAUSED) {
+          event.preventDefault();
+          onPauseToggle();
+        }
+      }
       return;
     }
 
-    if (getGameState() !== GAME_STATE.PLAYING) {
+    const currentState = getGameState();
+    if (currentState !== GAME_STATE.PLAYING && currentState !== GAME_STATE.READY) {
       return;
     }
 

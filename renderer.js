@@ -92,6 +92,18 @@ function drawStartHint(ctx) {
   ctx.restore();
 }
 
+function drawReadyHint(ctx) {
+  ctx.save();
+  ctx.font = '800 22px "Trebuchet MS", "Arial Black", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+  ctx.strokeStyle = 'rgba(43, 62, 83, 0.42)';
+  ctx.lineWidth = 6;
+  ctx.strokeText('Tap or press Space to start', CONFIG.canvasWidth / 2, 126);
+  ctx.fillText('Tap or press Space to start', CONFIG.canvasWidth / 2, 126);
+  ctx.restore();
+}
+
 function drawGameOverHint(ctx) {
   ctx.save();
   ctx.font = '700 18px "Trebuchet MS", Arial, sans-serif';
@@ -138,6 +150,10 @@ export function renderGame(ctx, assets, gameState) {
 
   if (state === GAME_STATE.START) {
     drawStartHint(ctx);
+  }
+
+  if (state === GAME_STATE.READY) {
+    drawReadyHint(ctx);
   }
 
   if (state === GAME_STATE.GAME_OVER) {

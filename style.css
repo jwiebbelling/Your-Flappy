@@ -92,6 +92,41 @@ body::after {
   max-height: 100dvh;
 }
 
+.pause-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
+  min-width: 88px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: rgba(255, 250, 238, 0.9);
+  box-shadow: 0 10px 20px rgba(25, 56, 87, 0.14);
+  cursor: pointer;
+}
+
+.pause-button--hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pause-button:focus-visible,
+.pause-button:hover {
+  transform: translateY(-1px);
+}
+
+.pause-button:focus-visible {
+  outline: 3px solid rgba(239, 108, 33, 0.22);
+  outline-offset: 2px;
+}
+
 .overlay-card {
   position: absolute;
   inset: 0;
@@ -314,6 +349,14 @@ body::after {
     flex-direction: column;
     align-items: center;
     text-align: center;
+  }
+
+  .pause-button {
+    top: 12px;
+    right: 12px;
+    min-width: 78px;
+    padding: 9px 12px;
+    font-size: 0.82rem;
   }
 }
 

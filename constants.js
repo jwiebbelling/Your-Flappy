@@ -35,7 +35,9 @@ export const CONFIG = {
 
 export const GAME_STATE = {
   START: 'start',
+  READY: 'ready',
   PLAYING: 'playing',
+  PAUSED: 'paused',
   GAME_OVER: 'game-over',
 };
 

@@ -12,6 +12,7 @@
     <section class="game-panel" aria-label="Your Flappy game">
       <div class="canvas-wrap">
         <canvas id="gameCanvas" width="480" height="640" aria-label="Game canvas"></canvas>
+        <button id="pauseButton" class="pause-button pause-button--hidden" type="button" aria-label="Pause game">Pause</button>
         <section id="startOverlay" class="overlay-card overlay-card--visible" aria-label="Start screen">
           <p class="eyebrow">Browser arcade</p>
           <h1 class="title">Your Flappy</h1>
@@ -51,8 +52,19 @@
             </div>
           </div>
           <div class="overlay-actions overlay-actions--stacked">
-            <button id="restartButton" class="button button--primary" type="button">Restart</button>
+            <button id="restartButton" class="button button--primary" type="button">Retry</button>
+            <button id="mainMenuButton" class="button button--secondary" type="button">Main menu</button>
             <button id="changeCharacterButton" class="button button--secondary" type="button">Change character</button>
+          </div>
+        </section>
+
+        <section id="pauseOverlay" class="overlay-card overlay-card--hidden" aria-label="Pause screen" aria-hidden="true">
+          <p class="eyebrow">Game paused</p>
+          <h2 class="title title--small">Paused</h2>
+          <p class="lede">Resume when you are ready, or return to the main menu without losing your selected character.</p>
+          <div class="overlay-actions overlay-actions--stacked">
+            <button id="resumeButton" class="button button--primary" type="button">Resume</button>
+            <button id="pauseMenuButton" class="button button--secondary" type="button">Main menu</button>
           </div>
         </section>
       </div>
