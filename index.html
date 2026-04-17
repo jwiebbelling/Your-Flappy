@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Your Flappy is a browser-based Flappy Bird-style game with custom character uploads.">
+  <title>Your Flappy</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="game-panel" aria-label="Your Flappy game">
+      <div class="canvas-wrap">
+        <canvas id="gameCanvas" width="480" height="640" aria-label="Game canvas"></canvas>
+        <section id="startOverlay" class="overlay-card overlay-card--visible" aria-label="Start screen">
+          <p class="eyebrow">Browser arcade</p>
+          <h1 class="title">Your Flappy</h1>
+          <p class="lede">Upload any image, flap through the pipes, and keep the same character for every restart.</p>
+
+          <div class="upload-panel">
+            <label class="button button--secondary" for="characterUpload">Upload your character</label>
+            <input id="characterUpload" class="sr-only" type="file" accept="image/png,image/jpeg,image/gif,image/webp">
+            <div class="preview-card" aria-live="polite">
+              <img id="characterPreview" class="preview-card__image" alt="Selected character preview">
+              <div>
+                <p class="preview-card__label">Current character</p>
+                <p id="characterStatus" class="preview-card__status">Default sprite</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="overlay-actions">
+            <button id="playButton" class="button button--primary" type="button">Play</button>
+          </div>
+
+          <p id="startBestScore" class="score-pill">Best score: 0</p>
+          <p class="hint">Tap, click, or press Space / Arrow Up to flap.</p>
+        </section>
+
+        <section id="gameOverOverlay" class="overlay-card overlay-card--hidden" aria-label="Game over screen" aria-hidden="true">
+          <p class="eyebrow">Run ended</p>
+          <h2 class="title title--small">Game Over</h2>
+          <div class="results-grid">
+            <div class="result-box">
+              <span class="result-box__label">Score</span>
+              <strong id="finalScore">0</strong>
+            </div>
+            <div class="result-box">
+              <span class="result-box__label">Best</span>
+              <strong id="bestScore">0</strong>
+            </div>
+          </div>
+          <div class="overlay-actions overlay-actions--stacked">
+            <button id="restartButton" class="button button--primary" type="button">Restart</button>
+            <button id="changeCharacterButton" class="button button--secondary" type="button">Change character</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="hud-bar" aria-label="Game instructions">
+        <span>Logical size: 480 × 640</span>
+        <span>Session high score only</span>
+      </div>
+    </section>
+  </main>
+
+  <img id="uploadedCharacter" class="hidden-image" alt="Uploaded character source" aria-hidden="true">
+
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
