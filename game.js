@@ -31,7 +31,7 @@ function createSound(src) {
 }
 
 function playSound(sound) {
-  if (!sound) {
+  if (!sound || sound.muted || sound.volume <= 0) {
     return;
   }
 
@@ -54,18 +54,85 @@ function setOverlayVisibility(node, isVisible) {
 
 const canvas = document.querySelector('#gameCanvas');
 const ctx = canvas.getContext('2d');
+const confettiCanvas = document.querySelector('#confettiCanvas');
+const confettiCtx = confettiCanvas.getContext('2d');
+
+// --- Confetti ---
+const CONFETTI_COLORS = ['#ff9f45', '#ef6c21', '#2f9e95', '#ffd166', '#06d6a0', '#118ab2', '#e63946', '#f9c74f'];
+const confettiParticles = [];
+
+function spawnConfetti() {
+  confettiParticles.length = 0;
+  const count = 120;
+  for (let i = 0; i < count; i++) {
+    confettiParticles.push({
+      x: Math.random() * confettiCanvas.width,
+      y: -10 - Math.random() * 80,
+      vx: (Math.random() - 0.5) * 160,
+      vy: 180 + Math.random() * 220,
+      size: 6 + Math.random() * 6,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      rotation: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 8,
+      shape: Math.random() < 0.5 ? 'rect' : 'circle',
+      life: 1,
+      decay: 0.28 + Math.random() * 0.18,
+    });
+  }
+}
+
+function updateConfetti(dt) {
+  for (const p of confettiParticles) {
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.rotation += p.spin * dt;
+    p.life -= p.decay * dt;
+  }
+  // remove dead particles
+  for (let i = confettiParticles.length - 1; i >= 0; i--) {
+    if (confettiParticles[i].life <= 0) confettiParticles.splice(i, 1);
+  }
+}
+
+function renderConfetti() {
+  confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  for (const p of confettiParticles) {
+    confettiCtx.save();
+    confettiCtx.globalAlpha = Math.max(0, p.life);
+    confettiCtx.fillStyle = p.color;
+    confettiCtx.translate(p.x, p.y);
+    confettiCtx.rotate(p.rotation);
+    if (p.shape === 'rect') {
+      confettiCtx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+    } else {
+      confettiCtx.beginPath();
+      confettiCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+      confettiCtx.fill();
+    }
+    confettiCtx.restore();
+  }
+}
 const startOverlay = document.querySelector('#startOverlay');
 const gameOverOverlay = document.querySelector('#gameOverOverlay');
 const pauseOverlay = document.querySelector('#pauseOverlay');
 const playButton = document.querySelector('#playButton');
+const openSettingsButton = document.querySelector('#openSettingsButton');
 const pauseButton = document.querySelector('#pauseButton');
 const restartButton = document.querySelector('#restartButton');
 const resumeButton = document.querySelector('#resumeButton');
+const pauseSettingsButton = document.querySelector('#pauseSettingsButton');
 const mainMenuButton = document.querySelector('#mainMenuButton');
 const pauseMenuButton = document.querySelector('#pauseMenuButton');
 const changeCharacterButton = document.querySelector('#changeCharacterButton');
+const settingsOverlay = document.querySelector('#settingsOverlay');
+const closeSettingsButton = document.querySelector('#closeSettingsButton');
+const sfxVolumeInput = document.querySelector('#sfxVolume');
+const sfxVolumeValue = document.querySelector('#sfxVolumeValue');
+const muteSfxInput = document.querySelector('#muteSfx');
 const finalScoreNode = document.querySelector('#finalScore');
 const bestScoreNode = document.querySelector('#bestScore');
+const bestScoreBox = document.querySelector('#bestScoreBox');
+const newRecordBadge = document.querySelector('#newRecordBadge');
 const startBestScoreNode = document.querySelector('#startBestScore');
 const fileInput = document.querySelector('#characterUpload');
 const previewImage = document.querySelector('#characterPreview');
@@ -85,6 +152,11 @@ const state = {
   selectedCharacterName: 'Default sprite',
   usingCustomCharacter: false,
   previousActiveState: GAME_STATE.READY,
+  settingsReturnState: GAME_STATE.START,
+  audio: {
+    sfxVolume: 1,
+    isSfxMuted: false,
+  },
 };
 
 const assets = {
@@ -111,19 +183,44 @@ function setPauseButtonVisibility(isVisible) {
 }
 
 function syncPauseButtonLabel() {
-  pauseButton.textContent = state.current === GAME_STATE.PAUSED ? 'Resume' : 'Pause';
+  pauseButton.textContent = state.current === GAME_STATE.PAUSED ? '▶' : '⏸';
   pauseButton.setAttribute('aria-label', state.current === GAME_STATE.PAUSED ? 'Resume game' : 'Pause game');
 }
 
 function syncScoreUI() {
   finalScoreNode.textContent = String(state.score);
   bestScoreNode.textContent = String(state.bestScore);
-  startBestScoreNode.textContent = `Best score: ${state.bestScore}`;
+  startBestScoreNode.textContent = `🏆 ${state.bestScore}`;
+}
+
+function applyAudioSettings() {
+  const volume = Math.max(0, Math.min(1, state.audio.sfxVolume));
+  const isMuted = state.audio.isSfxMuted || volume <= 0;
+
+  for (const sound of Object.values(assets.sounds)) {
+    sound.volume = volume;
+    sound.muted = isMuted;
+  }
+}
+
+function syncSettingsUI() {
+  const volumePercent = Math.round(state.audio.sfxVolume * 100);
+  sfxVolumeInput.value = String(volumePercent);
+  sfxVolumeValue.textContent = `${volumePercent}%`;
+  muteSfxInput.checked = state.audio.isSfxMuted;
 }
 
 function updateBestScore() {
-  state.bestScore = Math.max(state.bestScore, state.score);
+  const isNewRecord = state.score > 0 && state.score > state.bestScore;
+  if (isNewRecord) {
+    state.bestScore = state.score;
+    spawnConfetti();
+  } else {
+    state.bestScore = Math.max(state.bestScore, state.score);
+  }
   syncScoreUI();
+  newRecordBadge.classList.toggle('new-record-badge--hidden', !isNewRecord);
+  bestScoreBox.classList.toggle('result-box--record', isNewRecord);
 }
 
 function getActiveBirdSprite(elapsedSeconds) {
@@ -146,23 +243,60 @@ function startGame() {
   setOverlayVisibility(startOverlay, false);
   setOverlayVisibility(gameOverOverlay, false);
   setOverlayVisibility(pauseOverlay, false);
+  setOverlayVisibility(settingsOverlay, false);
   setPauseButtonVisibility(true);
   syncPauseButtonLabel();
   playSound(assets.sounds.swoosh);
 }
 
 function returnToMainMenu() {
+  newRecordBadge.classList.add('new-record-badge--hidden');
+  bestScoreBox.classList.remove('result-box--record');
   resetRun();
   state.current = GAME_STATE.START;
   setOverlayVisibility(startOverlay, true);
   setOverlayVisibility(gameOverOverlay, false);
   setOverlayVisibility(pauseOverlay, false);
+  setOverlayVisibility(settingsOverlay, false);
   setPauseButtonVisibility(false);
   syncPauseButtonLabel();
   syncScoreUI();
 }
 
+function openSettings() {
+  state.settingsReturnState = state.current;
+  setOverlayVisibility(settingsOverlay, true);
+
+  if (state.current === GAME_STATE.START) {
+    setOverlayVisibility(startOverlay, false);
+    setPauseButtonVisibility(false);
+  }
+
+  if (state.current === GAME_STATE.PAUSED) {
+    setOverlayVisibility(pauseOverlay, false);
+  }
+
+  syncSettingsUI();
+}
+
+function closeSettings() {
+  setOverlayVisibility(settingsOverlay, false);
+
+  if (state.settingsReturnState === GAME_STATE.PAUSED) {
+    setOverlayVisibility(pauseOverlay, true);
+    setPauseButtonVisibility(true);
+    return;
+  }
+
+  setOverlayVisibility(startOverlay, true);
+  setPauseButtonVisibility(false);
+}
+
 function togglePause() {
+  if (settingsOverlay.classList.contains('overlay-card--visible')) {
+    return;
+  }
+
   if (state.current === GAME_STATE.PAUSED) {
     state.current = state.previousActiveState;
     setOverlayVisibility(pauseOverlay, false);
@@ -274,7 +408,9 @@ function loop(timestamp) {
   }
 
   update(dt);
+  updateConfetti(dt);
   render(timestamp);
+  renderConfetti();
   requestAnimationFrame(loop);
 }
 
@@ -299,6 +435,7 @@ async function bootstrap() {
   assets.sounds = Object.fromEntries(
     Object.entries(ASSET_PATHS.audio).map(([key, src]) => [key, createSound(src)]),
   );
+  applyAudioSettings();
 
   setupUploader({
     input: fileInput,
@@ -321,14 +458,28 @@ async function bootstrap() {
   });
 
   playButton.addEventListener('click', startGame);
+  openSettingsButton.addEventListener('click', openSettings);
   pauseButton.addEventListener('click', togglePause);
   restartButton.addEventListener('click', startGame);
   resumeButton.addEventListener('click', togglePause);
+  pauseSettingsButton.addEventListener('click', openSettings);
   mainMenuButton.addEventListener('click', returnToMainMenu);
   pauseMenuButton.addEventListener('click', returnToMainMenu);
   changeCharacterButton.addEventListener('click', openCharacterPicker);
+  closeSettingsButton.addEventListener('click', closeSettings);
+  sfxVolumeInput.addEventListener('input', (event) => {
+    const nextVolume = Number(event.target.value) / 100;
+    state.audio.sfxVolume = Number.isFinite(nextVolume) ? nextVolume : state.audio.sfxVolume;
+    sfxVolumeValue.textContent = `${Math.round(state.audio.sfxVolume * 100)}%`;
+    applyAudioSettings();
+  });
+  muteSfxInput.addEventListener('change', (event) => {
+    state.audio.isSfxMuted = Boolean(event.target.checked);
+    applyAudioSettings();
+  });
 
   setPauseButtonVisibility(false);
+  syncSettingsUI();
   syncScoreUI();
   requestAnimationFrame(loop);
 }

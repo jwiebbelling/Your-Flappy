@@ -12,7 +12,8 @@
     <section class="game-panel" aria-label="Your Flappy game">
       <div class="canvas-wrap">
         <canvas id="gameCanvas" width="480" height="640" aria-label="Game canvas"></canvas>
-        <button id="pauseButton" class="pause-button pause-button--hidden" type="button" aria-label="Pause game">Pause</button>
+        <canvas id="confettiCanvas" class="confetti-canvas" width="480" height="640" aria-hidden="true"></canvas>
+        <button id="pauseButton" class="pause-button pause-button--hidden" type="button" aria-label="Pause game">⏸</button>
         <section id="startOverlay" class="overlay-card overlay-card--visible" aria-label="Start screen">
           <p class="eyebrow">Browser arcade</p>
           <h1 class="title">Your Flappy</h1>
@@ -31,7 +32,8 @@
           </div>
 
           <div class="overlay-actions">
-            <button id="playButton" class="button button--primary" type="button">Play</button>
+            <button id="playButton" class="button button--primary button--icon" type="button" aria-label="Play">▶</button>
+            <button id="openSettingsButton" class="button button--settings button--icon" type="button" aria-label="Open settings">⚙</button>
           </div>
 
           <p id="startBestScore" class="score-pill">Best score: 0</p>
@@ -41,12 +43,13 @@
         <section id="gameOverOverlay" class="overlay-card overlay-card--hidden" aria-label="Game over screen" aria-hidden="true">
           <p class="eyebrow">Run ended</p>
           <h2 class="title title--small">Game Over</h2>
+          <p id="newRecordBadge" class="new-record-badge new-record-badge--hidden" aria-live="polite">🏆 New record!</p>
           <div class="results-grid">
             <div class="result-box">
               <span class="result-box__label">Score</span>
               <strong id="finalScore">0</strong>
             </div>
-            <div class="result-box">
+            <div id="bestScoreBox" class="result-box">
               <span class="result-box__label">Best</span>
               <strong id="bestScore">0</strong>
             </div>
@@ -62,9 +65,31 @@
           <p class="eyebrow">Game paused</p>
           <h2 class="title title--small">Paused</h2>
           <p class="lede">Resume when you are ready, or return to the main menu without losing your selected character.</p>
-          <div class="overlay-actions overlay-actions--stacked">
-            <button id="resumeButton" class="button button--primary" type="button">Resume</button>
+          <div class="overlay-actions overlay-actions--pause">
+            <div class="overlay-actions">
+              <button id="resumeButton" class="button button--primary button--icon" type="button" aria-label="Resume">▶</button>
+              <button id="pauseSettingsButton" class="button button--settings button--icon" type="button" aria-label="Open settings">⚙</button>
+            </div>
             <button id="pauseMenuButton" class="button button--secondary" type="button">Main menu</button>
+          </div>
+        </section>
+
+        <section id="settingsOverlay" class="overlay-card overlay-card--hidden" aria-label="Settings screen" aria-hidden="true">
+          <p class="eyebrow">Audio controls</p>
+          <h2 class="title title--small">Settings</h2>
+          <div class="settings-panel">
+            <div class="settings-row">
+              <label class="settings-label" for="sfxVolume">SFX volume</label>
+              <output id="sfxVolumeValue" class="settings-value" for="sfxVolume">100%</output>
+            </div>
+            <input id="sfxVolume" class="settings-slider" type="range" min="0" max="100" step="1" value="100" aria-label="SFX volume">
+            <label class="mute-toggle" for="muteSfx">
+              <input id="muteSfx" type="checkbox">
+              <span>Mute SFX</span>
+            </label>
+          </div>
+          <div class="overlay-actions">
+            <button id="closeSettingsButton" class="button button--primary" type="button">Done</button>
           </div>
         </section>
       </div>
