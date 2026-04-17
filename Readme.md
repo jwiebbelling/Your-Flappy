@@ -2,7 +2,7 @@
 
 Your Flappy is a lightweight, browser-based Flappy Bird-style game with support for custom character uploads.
 
-## [ Play Online](https://https://jwiebbelling.github.io/Your-Flappy/)
+##  Play Online
 
 Play in your browser: [https://jwiebbelling.github.io/Your-Flappy/](https://jwiebbelling.github.io/Your-Flappy/)
 
