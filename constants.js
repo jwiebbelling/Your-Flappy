@@ -1,5 +1,5 @@
 export const CONFIG = {
-  canvasWidth: 480,
+  canvasWidth: 640,
   canvasHeight: 640,
   gravity: 1800,
   flapVelocity: -520,
@@ -22,7 +22,7 @@ export const CONFIG = {
     height: 38,
   },
   startPosition: {
-    x: 148,
+    x: 200,
     y: 250,
   },
   scoreFont: '800 54px "Trebuchet MS", "Arial Black", sans-serif',

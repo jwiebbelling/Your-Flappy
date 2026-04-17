@@ -72,10 +72,30 @@ body::after {
   gap: 14px;
 }
 
+@media (min-width: 1024px) {
+  .app-shell {
+    padding: 32px;
+  }
+
+  .game-panel {
+    width: auto;
+  }
+
+  .canvas-wrap {
+    max-width: min(calc(100dvh - 96px), 900px);
+  }
+
+  #gameCanvas {
+    max-width: unset;
+    height: min(calc(100dvh - 96px), 900px);
+    width: auto;
+  }
+}
+
 .canvas-wrap {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: 640px;
   margin: 0 auto;
   border-radius: 28px;
   overflow: clip;
@@ -87,7 +107,7 @@ body::after {
 #gameCanvas {
   display: block;
   width: 100%;
-  max-width: 480px;
+  max-width: 640px;
   height: auto;
   max-height: 100dvh;
 }
@@ -474,7 +494,7 @@ body::after {
   }
 
   .game-panel {
-    grid-template-columns: minmax(0, 480px);
+    grid-template-columns: minmax(0, 640px);
     justify-content: center;
   }
 

@@ -154,7 +154,7 @@ const state = {
   previousActiveState: GAME_STATE.READY,
   settingsReturnState: GAME_STATE.START,
   audio: {
-    sfxVolume: 1,
+    sfxVolume: 0.9,
     isSfxMuted: false,
   },
 };
@@ -432,6 +432,29 @@ async function bootstrap() {
   previewImage.src = assets.activeSprite?.src ?? '';
   previewImage.hidden = !assets.activeSprite;
 
+  // Restore previously saved character from localStorage.
+  try {
+    const savedSrc = localStorage.getItem('yf_character_src');
+    const savedName = localStorage.getItem('yf_character_name');
+    if (savedSrc && savedName) {
+      await new Promise((resolve) => {
+        uploadedImage.onload = () => {
+          assets.activeSprite = uploadedImage;
+          state.selectedCharacterName = savedName;
+          state.usingCustomCharacter = true;
+          previewImage.src = savedSrc;
+          previewImage.hidden = false;
+          characterStatus.textContent = savedName;
+          resolve();
+        };
+        uploadedImage.onerror = resolve; // fall back to default on error
+        uploadedImage.src = savedSrc;
+      });
+    }
+  } catch {
+    // localStorage unavailable — silently skip.
+  }
+
   assets.sounds = Object.fromEntries(
     Object.entries(ASSET_PATHS.audio).map(([key, src]) => [key, createSound(src)]),
   );
@@ -447,6 +470,12 @@ async function bootstrap() {
       assets.activeSprite = image;
       state.selectedCharacterName = fileName;
       state.usingCustomCharacter = true;
+      try {
+        localStorage.setItem('yf_character_src', image.src);
+        localStorage.setItem('yf_character_name', fileName);
+      } catch {
+        // Storage unavailable — silently skip.
+      }
     },
   });
 

@@ -11,8 +11,8 @@
   <main class="app-shell">
     <section class="game-panel" aria-label="Your Flappy game">
       <div class="canvas-wrap">
-        <canvas id="gameCanvas" width="480" height="640" aria-label="Game canvas"></canvas>
-        <canvas id="confettiCanvas" class="confetti-canvas" width="480" height="640" aria-hidden="true"></canvas>
+        <canvas id="gameCanvas" width="640" height="640" aria-label="Game canvas"></canvas>
+        <canvas id="confettiCanvas" class="confetti-canvas" width="640" height="640" aria-hidden="true"></canvas>
         <button id="pauseButton" class="pause-button pause-button--hidden" type="button" aria-label="Pause game">⏸</button>
         <section id="startOverlay" class="overlay-card overlay-card--visible" aria-label="Start screen">
           <p class="eyebrow">Browser arcade</p>
@@ -82,7 +82,7 @@
               <label class="settings-label" for="sfxVolume">SFX volume</label>
               <output id="sfxVolumeValue" class="settings-value" for="sfxVolume">100%</output>
             </div>
-            <input id="sfxVolume" class="settings-slider" type="range" min="0" max="100" step="1" value="100" aria-label="SFX volume">
+            <input id="sfxVolume" class="settings-slider" type="range" min="0" max="100" step="1" value="90" aria-label="SFX volume">
             <label class="mute-toggle" for="muteSfx">
               <input id="muteSfx" type="checkbox">
               <span>Mute SFX</span>
@@ -92,11 +92,6 @@
             <button id="closeSettingsButton" class="button button--primary" type="button">Done</button>
           </div>
         </section>
-      </div>
-
-      <div class="hud-bar" aria-label="Game instructions">
-        <span>Logical size: 480 × 640</span>
-        <span>Session high score only</span>
       </div>
     </section>
   </main>
